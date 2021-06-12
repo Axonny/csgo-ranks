@@ -1,10 +1,11 @@
+import os
 import config
-from csgo_ranks import csgoRankParser
+from csgo_ranks import CSGORankParser
 from loader import LoaderFromFiles
 
 if __name__ == '__main__':
     loader = LoaderFromFiles(config.path_to_account_data, config.path_to_mafiles)
-    parser = csgoRankParser(loader.result, config.is_print_console)
+    parser = CSGORankParser(loader.result, config.is_print_console)
 
     if config.path_to_output != "":
         parser.save_to_file(config.path_to_output)
@@ -13,4 +14,6 @@ if __name__ == '__main__':
         parser.save_to_buffer()
 
     if config.is_print_console:
-        parser.result
+        print(parser.get_beautify_str())
+
+    os.system("pause")

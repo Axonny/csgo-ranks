@@ -1,8 +1,8 @@
 import json
 from os import listdir
 
-class LoaderFromFiles():
 
+class LoaderFromFiles:
     __slots__ = {"accounts_file", "path_to_mafiles", "data"}
 
     def __init__(self, accounts_file: str, path_to_mafiles: str):
@@ -22,13 +22,13 @@ class LoaderFromFiles():
         with open(self.accounts_file, "r", encoding="utf-8") as f:
             for string in f.readlines():
                 if string.strip():
-                    account_name, password = map(
-                        lambda string: string.strip(), string.split())
+                    account_name, password = string.split()
+                    account_name = account_name.lower()
                     if not account_name.startswith("#"):
                         accounts[account_name] = {"password": password}
         return accounts
 
-    def _load_maFiles(self) -> dict:
+    def _load_ma_files(self) -> dict:
         maFiles = {}
         for file in listdir(self.path_to_mafiles):
             if file.endswith(".maFile"):
@@ -44,11 +44,12 @@ class LoaderFromFiles():
 
     def _create_accounts_list(self) -> list:
         accounts = self._load_accounts()
-        maFiles = self._load_maFiles()
+        maFiles = self._load_ma_files()
         for account in accounts:
             accounts[account].update(maFiles.get(account, {}))
 
         return accounts
+
 
 if __name__ == '__main__':
     print(LoaderFromFiles('accounts_data.txt', 'maFiles').result)
