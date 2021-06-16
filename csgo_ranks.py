@@ -10,12 +10,13 @@ from datetime import datetime, timedelta
 
 class CSGORankParser:
 
-    __slots__ = {'accounts_data', 're_rank', 're_exp', 'data', 'debug'}
+    __slots__ = {'accounts_data', 're_rank', 're_exp','re_time', 'data', 'debug'}
 
     def __init__(self, accounts_data: dict, debug: bool):
         self.accounts_data = accounts_data
         self.re_rank = re.compile(r'CS:GO Profile Rank: (\d+)')
         self.re_exp = re.compile(r'Experience points earned towards next rank: (\d+)')
+        self.re_time = re.compile(r'Logged out of CS:GO(.*)GMT')
         self.data = None
         self.debug = debug
 
@@ -32,15 +33,18 @@ class CSGORankParser:
         steam_client.login(name, data["password"], data["mobile"])
 
         session = steam_client._session
+        session.cookies["Steam_Language"] = "english"
         url = f'https://steamcommunity.com/profiles/{data["mobile"]["steamid"]}/gcpd/730/'
         url_inv = f'https://steamcommunity.com/profiles/{data["mobile"]["steamid"]}/inventoryhistory/?app%5B%5D=730'
 
         html = session.get(url).text
+        last_run = datetime.utcnow() - datetime.strptime(self.re_time.findall(html)[0].strip()[9:], "%Y-%m-%d %H:%M:%S")
         res = {
             "rank": self.re_rank.findall(html)[0],
             "expirience": self.re_exp.findall(html)[0],
             "drop": "",
-            "case": ""
+            "case": "",
+            "time": str(last_run.days)
         }
 
         inv_history = session.get(url_inv).text
@@ -51,12 +55,13 @@ class CSGORankParser:
             date_text = " ".join(date_div.get_text().strip().split())
             date = datetime.strptime(date_text, "%d %b, %Y %I:%M%p")
             if reason == "Got an item drop" and res["case"] == "":
-                res["case"] = date.strftime("%d.%m.%Y %H:%M")
+                date_now = datetime.utcnow() - timedelta(days=7, hours=7)
+                res["case"] = "+" if date >= date_now else "-"
             elif reason == "Earned a new rank and got a drop" and res["drop"] == "":
                 cur_day = datetime.now().weekday()
                 different_days = cur_day - 2 if cur_day >= 2 else 5 + cur_day
-                wednesday = datetime.now() - timedelta(days=different_days)
-                wednesday -= timedelta(hours=wednesday.hour-5)
+                wednesday = datetime.utcnow() - timedelta(days=different_days)
+                wednesday -= timedelta(hours=wednesday.hour, minutes=wednesday.minute, seconds=wednesday.second)
                 if wednesday <= date:
                     res["drop"] = "+"
                 else:

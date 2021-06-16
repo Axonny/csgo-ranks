@@ -11,7 +11,7 @@ path_to_account_data = "accounts_data.txt"
 path_to_output = "output.txt"
 
 # Сохранить ли результат работы в буфер обмена
-is_save_to_buffer = False
+is_save_to_buffer = True
 
 # Показывать вывод в консоли
 is_print_console = True
