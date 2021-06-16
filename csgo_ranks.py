@@ -56,7 +56,8 @@ class CSGORankParser:
             date = datetime.strptime(date_text, "%d %b, %Y %I:%M%p")
             if reason == "Got an item drop" and res["case"] == "":
                 date_now = datetime.utcnow() - timedelta(days=7, hours=7)
-                res["case"] = "+" if date >= date_now else "-"
+                different = self._timedelta2str(date - date_now)
+                res["case"] = f"+ ({different})" if date >= date_now else "-"
             elif reason == "Earned a new rank and got a drop" and res["drop"] == "":
                 cur_day = datetime.now().weekday()
                 different_days = cur_day - 2 if cur_day >= 2 else 5 + cur_day
@@ -93,3 +94,11 @@ class CSGORankParser:
 
     def save_to_buffer(self) -> None:
         pyperclip.copy(self.get_beautify_str())
+
+    def _timedelta2str(self, delta: timedelta) -> str:
+    	days = f"{delta.days} day{'s,' if delta.days > 1 else ',  '}"
+    	_, mod = divmod(int(delta.total_seconds()), 3600 * 24)
+    	hours, mod = divmod(mod, 3600)
+    	minutes, seconds = divmod(mod, 60)
+    	time = f"{hours:0>2}:{minutes:0>2}:{seconds:0>2}"
+    	return f"{days} {time}"

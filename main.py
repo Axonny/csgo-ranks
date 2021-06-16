@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser = CSGORankParser(loader.result, config.is_print_console)
 
     if config.is_print_console:
-        print("login\t", "level", "exp", "levelUp", "case", "days since last session", sep='\t')
+        print("login\t", "level", "exp", "levelUp", "case\t\t", "days since last session", sep='\t')
         parser.result
 
     if config.path_to_output != "":
